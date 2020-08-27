@@ -1,10 +1,10 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import PropTypes from "prop-types";
-import Context from "../../context/context";
+import {useStore} from "../../store/store";
 
 const TodoItemComponent = ({todo, index}) => {
 
-    const {removeTodo, onChangeCompleted} = useContext(Context);
+    const {dispatch} = useStore();
 
     return (
         <li className="list-group-item custom-control custom-checkbox pl-5">
@@ -12,14 +12,14 @@ const TodoItemComponent = ({todo, index}) => {
             <input type="checkbox"
                    className="custom-control-input" id={`checkbox${index}`}
                    checked={todo.completed}
-                   onChange={() => onChangeCompleted(todo.id)}
+                   onChange={() => dispatch({type: 'CHANGE_COMPLETED', id: todo.id})}
             />
 
             <label className={'custom-control-label ' + (todo.completed ? ' text-success' : '')}
                    htmlFor={`checkbox${index}`}>
                 <strong>#{todo.id}</strong> {todo.title}
             </label>
-            <button className="btn btn-outline-dark float-right btn-sm" onClick={() => removeTodo(todo.id)}>&times;</button>
+            <button className="btn btn-outline-dark float-right btn-sm" onClick={() => dispatch({type: 'REMOVE_TODO', id: todo.id})}>&times;</button>
         </li>
     );
 };

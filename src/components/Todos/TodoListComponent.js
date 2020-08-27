@@ -1,35 +1,61 @@
-import React, {useContext} from 'react';
+import React, {useEffect} from 'react';
 import TodoItemComponent from "./TodoItemComponent";
-import PropTypes from "prop-types";
-import Context from "../../context/context";
 import AddTodoComponent from "./AddTodoComponent";
+import Loader from "../Loader/LoaderComponent";
+import {useStore} from "../../store/store";
 
-const TodoListComponent = props => {
+const TodoListComponent = () => {
 
-    const { clearCompleted } = useContext(Context);
+    const {state, dispatch} = useStore();
 
-    function addTodo(title) {
+    useEffect( () => {
 
-    }
+        const abortController = new AbortController();
+
+        const fetchData = async () => {
+
+            try {
+                const response = await fetch('https://jsonplaceholder.typicode.com/todos?_limit=20', {signal: abortController.signal});
+
+                if (!response.ok)
+                    throw new Error(`${response.status} ${response.statusText}`);
+
+                const json = await response.json();
+                dispatch({type: 'REQUEST_SUCCESSFUL', data: json});
+            } catch (e) {
+                // only call dispatch when we know the fetch was not aborted
+                if (!abortController.signal.aborted) {
+                    dispatch({type: 'REQUEST_FAILED', error: e.message});
+                }
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            abortController.abort();
+        };
+
+    }, [dispatch]);
 
     return (
         <div className="container">
             <h1 className="text-center mt-1">List Group Todos</h1>
-            <AddTodoComponent />
-            <ul className="list-group">
-                {props.todos.map((todo, key) => {
-                    return <TodoItemComponent todo={todo} index={key} key={key} />
-                })}
-            </ul>
+            <AddTodoComponent/>
+            { state.isLoading ? <Loader/> : (
+                <ul className="list-group">
+                    {state.todos.map((todo, key) => {
+                        return <TodoItemComponent todo={todo} index={key} key={key}/>
+                    })}
+                </ul>
+            )}
             <div className="form-group text-right pt-2">
-                <button className="btn btn-success" onClick={() => clearCompleted()}>Clear Completed</button>
+                <button className="btn btn-success" onClick={() => dispatch({type: 'CLEAR_COMPLETED'})}>Clear
+                    Completed
+                </button>
             </div>
         </div>
     );
-};
-
-TodoListComponent.propTypes = {
-    todos: PropTypes.arrayOf(PropTypes.object).isRequired
 };
 
 export default TodoListComponent;
