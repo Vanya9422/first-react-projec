@@ -1,16 +1,15 @@
-import React, {useContext, useState} from "react";
-import PropTypes from "prop-types";
-import Context from "../../context/context";
+import React from "react";
 import hooks from "../../hooks/hooks";
+import {useStore} from "../../store/store";
 
 const AddTodoComponent = () => {
 
-    const {addTodo} = useContext(Context);
+    const {dispatch} = useStore();
     const input = hooks.useInputValue('');
 
     function submitHandler(e) {
         e.preventDefault();
-        if (input.value().trim()) addTodo(input.value().trim());
+        if (input.value().trim()) dispatch({type: 'ADD_TODO', title: input.value().trim()});
         input.clear();
     }
 
@@ -24,10 +23,6 @@ const AddTodoComponent = () => {
             </form>
         </div>
     )
-};
-
-AddTodoComponent.propTypes = {
-    onCreateTodo: PropTypes.func.isRequired
 };
 
 export default AddTodoComponent;
